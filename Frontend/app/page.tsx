@@ -3,10 +3,13 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   ArrowRight,
+  ArrowLeft,
   Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Download,
+  FileText,
   Heart,
   MapPin,
   Menu,
@@ -388,9 +391,9 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -821,6 +824,20 @@ export default function Home() {
     setTimeout(() => setSearchSent(false), 2600);
   };
 
+  // Open full booking detail page in a new tab
+  const handleOpenBookingDetail = (b: Booking) => {
+    const villa = allVillas.find((v) => v.id === b.villaId);
+    try {
+      localStorage.setItem(
+        `stayvilla-booking-${b.id}`,
+        JSON.stringify({ booking: b, villa: villa || null })
+      );
+    } catch (err) {
+      console.error('Failed to save booking to localStorage', err);
+    }
+    window.open(`/booking/${b.id}`, '_blank');
+  };
+
   // Confirm Reservation and add to Bookings
   const handleConfirmReservation = (villa: Villa) => {
     const activeNights = nights > 0 ? nights : 7;
@@ -1026,7 +1043,7 @@ export default function Home() {
           {/* LOCATION FIELD */}
           <div className={`search-field location-field ${locationOpen ? 'field-active' : ''}`}>
             <MapPin size={19} className="field-icon" />
-            <label htmlFor="location-input">Where in India</label>
+            <label htmlFor="location-input">Where</label>
             <div className="input-with-clear">
               <input
                 id="location-input"
@@ -1044,7 +1061,7 @@ export default function Home() {
                   if (e.key === 'Enter') submitSearch();
                   if (e.key === 'Escape') setLocationOpen(false);
                 }}
-                placeholder="Search Goa, Udaipur, Kerala, Manali..."
+                placeholder="Search..."
                 autoComplete="off"
               />
               {locationQuery && (
@@ -1179,9 +1196,8 @@ export default function Home() {
 
           {/* CHECK IN FIELD */}
           <div
-            className={`search-field date-field ${
-              calendarOpen && activeCalendarField === 'checkIn' ? 'field-active' : ''
-            }`}
+            className={`search-field date-field ${calendarOpen && activeCalendarField === 'checkIn' ? 'field-active' : ''
+              }`}
             onClick={() => {
               setActiveCalendarField('checkIn');
               setCalendarOpen(true);
@@ -1198,9 +1214,8 @@ export default function Home() {
 
           {/* CHECK OUT FIELD */}
           <div
-            className={`search-field date-field ${
-              calendarOpen && activeCalendarField === 'checkOut' ? 'field-active' : ''
-            }`}
+            className={`search-field date-field ${calendarOpen && activeCalendarField === 'checkOut' ? 'field-active' : ''
+              }`}
             onClick={() => {
               setActiveCalendarField('checkOut');
               setCalendarOpen(true);
@@ -1560,77 +1575,77 @@ export default function Home() {
           nights > 0 ||
           activeFilters.adults + activeFilters.children !== 2 ||
           activeFilters.rooms !== 1) && (
-          <div className="active-filters-bar">
-            <div className="filters-label">
-              <SlidersHorizontal size={14} />
-              <span>Active filters:</span>
+            <div className="active-filters-bar">
+              <div className="filters-label">
+                <SlidersHorizontal size={14} />
+                <span>Active filters:</span>
+              </div>
+              <div className="filter-chips">
+                {activeFilters.location && (
+                  <span className="filter-chip">
+                    <MapPin size={12} /> {activeFilters.location}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocationQuery('');
+                        setDetectedLocationName(null);
+                        setActiveFilters((prev) => ({ ...prev, location: '' }));
+                      }}
+                      title="Remove location filter"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+
+                {activeFilters.checkIn && activeFilters.checkOut && nights > 0 && (
+                  <span className="filter-chip">
+                    <CalendarIcon size={12} /> {format(activeFilters.checkIn, 'dd MMM')} –{' '}
+                    {format(activeFilters.checkOut, 'dd MMM')} ({nights} {nights === 1 ? 'night' : 'nights'})
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCheckIn(null);
+                        setCheckOut(null);
+                        setActiveFilters((prev) => ({ ...prev, checkIn: null, checkOut: null }));
+                      }}
+                      title="Remove date filter"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+
+                {(activeFilters.adults + activeFilters.children !== 2 || activeFilters.rooms !== 1) && (
+                  <span className="filter-chip">
+                    <Users size={12} /> {activeFilters.adults + activeFilters.children} guests ·{' '}
+                    {activeFilters.rooms} {activeFilters.rooms === 1 ? 'room' : 'rooms'}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdults(2);
+                        setChildrenCount(0);
+                        setRoomsCount(1);
+                        setActiveFilters((prev) => ({
+                          ...prev,
+                          adults: 2,
+                          children: 0,
+                          rooms: 1,
+                        }));
+                      }}
+                      title="Reset guest filter"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+
+                <button type="button" className="reset-filters-btn" onClick={resetAllFilters}>
+                  <RotateCcw size={13} /> Reset all
+                </button>
+              </div>
             </div>
-            <div className="filter-chips">
-              {activeFilters.location && (
-                <span className="filter-chip">
-                  <MapPin size={12} /> {activeFilters.location}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLocationQuery('');
-                      setDetectedLocationName(null);
-                      setActiveFilters((prev) => ({ ...prev, location: '' }));
-                    }}
-                    title="Remove location filter"
-                  >
-                    <X size={12} />
-                  </button>
-                </span>
-              )}
-
-              {activeFilters.checkIn && activeFilters.checkOut && nights > 0 && (
-                <span className="filter-chip">
-                  <CalendarIcon size={12} /> {format(activeFilters.checkIn, 'dd MMM')} –{' '}
-                  {format(activeFilters.checkOut, 'dd MMM')} ({nights} {nights === 1 ? 'night' : 'nights'})
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCheckIn(null);
-                      setCheckOut(null);
-                      setActiveFilters((prev) => ({ ...prev, checkIn: null, checkOut: null }));
-                    }}
-                    title="Remove date filter"
-                  >
-                    <X size={12} />
-                  </button>
-                </span>
-              )}
-
-              {(activeFilters.adults + activeFilters.children !== 2 || activeFilters.rooms !== 1) && (
-                <span className="filter-chip">
-                  <Users size={12} /> {activeFilters.adults + activeFilters.children} guests ·{' '}
-                  {activeFilters.rooms} {activeFilters.rooms === 1 ? 'room' : 'rooms'}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAdults(2);
-                      setChildrenCount(0);
-                      setRoomsCount(1);
-                      setActiveFilters((prev) => ({
-                        ...prev,
-                        adults: 2,
-                        children: 0,
-                        rooms: 1,
-                      }));
-                    }}
-                    title="Reset guest filter"
-                  >
-                    <X size={12} />
-                  </button>
-                </span>
-              )}
-
-              <button type="button" className="reset-filters-btn" onClick={resetAllFilters}>
-                <RotateCcw size={13} /> Reset all
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
         {/* VILLAS GRID OR EMPTY STATE */}
         {filteredVillas.length > 0 ? (
@@ -1854,7 +1869,7 @@ export default function Home() {
           <p className="eyebrow">Stay connected</p>
           <h2>
             Notes from India&apos;s<br />
-            <em>royal retreats.</em>
+            <em>beautiful places.</em>
           </h2>
         </div>
         <div className="newsletter-form">
@@ -2159,7 +2174,12 @@ export default function Home() {
             <div className="dash-bookings-list">
               {displayedBookings.length > 0 ? (
                 displayedBookings.map((b) => (
-                  <div className={`booking-record-card ${b.status.toLowerCase()}`} key={b.id}>
+                  <div
+                    className={`booking-record-card ${b.status.toLowerCase()}`}
+                    key={b.id}
+                    onClick={() => handleOpenBookingDetail(b)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="booking-thumb">
                       <img src={b.villaImage} alt={b.villaName} />
                       <span className={`booking-status-tag status-${b.status.toLowerCase()}`}>
@@ -2208,7 +2228,10 @@ export default function Home() {
                           <button
                             type="button"
                             className="cancel-booking-btn"
-                            onClick={() => handleCancelBooking(b.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCancelBooking(b.id);
+                            }}
                           >
                             <Trash2 size={13} /> Cancel Reservation
                           </button>
