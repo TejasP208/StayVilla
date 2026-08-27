@@ -356,14 +356,14 @@ export default function BookingDetailPage() {
               <p>
                 For cancellation and date modifications, please contact our concierge team directly via{' '}
                 <a
-                  href={`https://wa.me/919820147291?text=${encodeURIComponent(
+                  href={`https://wa.me/919167914640?text=${encodeURIComponent(
                     `Hello StayVilla Concierge, I would like to request cancellation for reservation ${booking.reference} (${booking.villaName}).`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bd-whatsapp-link"
                 >
-                  WhatsApp (+91 98201 47291)
+                  WhatsApp (+91 9167914640)
                 </a>
                 .
               </p>
