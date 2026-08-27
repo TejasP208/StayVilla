@@ -509,9 +509,9 @@ export default function Home() {
     return 0;
   }, [checkIn, checkOut]);
 
-  // Close popovers on click outside
+  // Close popovers on click / touch outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
       if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
         setLocationOpen(false);
         setCalendarOpen(false);
@@ -522,7 +522,11 @@ export default function Home() {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Filter destination suggestions
