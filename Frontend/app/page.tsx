@@ -404,7 +404,7 @@ export default function Home() {
   const [userProfile, setUserProfile] = useState<UserProfile>({
     name: 'Aarav Mehta',
     email: 'aarav.mehta@stayvilla.in',
-    phone: '+91 98201 47291',
+    phone: '+91 9167914640',
     country: 'India',
     tier: 'Connoisseur Club',
     memberSince: 'March 2023',
@@ -2226,14 +2226,14 @@ export default function Home() {
                       <div className="booking-actions-row">
                         {b.status === 'Confirmed' ? (
                           <a
-                            href={`https://wa.me/919820147291?text=${encodeURIComponent(
+                            href={`https://wa.me/919167914640?text=${encodeURIComponent(
                               `Hello StayVilla Concierge, I would like to request cancellation for reservation ${b.reference} (${b.villaName}).`
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="whatsapp-cancel-disclaimer"
                             onClick={(e) => e.stopPropagation()}
-                            title="Contact concierge on WhatsApp for cancellation"
+                            title="Contact concierge on WhatsApp for cancellation (+91 91679 14640)"
                           >
                             <span className="whatsapp-icon-badge">
                               <svg
