@@ -2237,7 +2237,7 @@ export default function Home() {
                             rel="noopener noreferrer"
                             className="whatsapp-cancel-disclaimer"
                             onClick={(e) => e.stopPropagation()}
-                            title="Contact concierge on WhatsApp for cancellation (+91 91679 14640)"
+                            title="Contact concierge on WhatsApp for cancellation"
                           >
                             <span className="whatsapp-icon-badge">
                               <svg
