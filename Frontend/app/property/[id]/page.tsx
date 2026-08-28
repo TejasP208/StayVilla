@@ -196,6 +196,9 @@ export default function PropertyDetailPage() {
     }
   };
 
+  // Meal Plan option: 'with-food' | 'without-food'
+  const [mealOption, setMealOption] = useState<'with-food' | 'without-food'>('with-food');
+
   // Calculate nights and prices
   const totalGuests = adults + childrenCount;
   const nights = useMemo(() => {
@@ -206,7 +209,10 @@ export default function PropertyDetailPage() {
     return 7;
   }, [checkIn, checkOut]);
 
-  const subtotal = villa.pricePerNight * nights;
+  const MEAL_RATE_PER_GUEST_NIGHT = 2500;
+  const staySubtotal = villa.pricePerNight * nights;
+  const mealTotal = mealOption === 'with-food' ? MEAL_RATE_PER_GUEST_NIGHT * totalGuests * nights : 0;
+  const subtotal = staySubtotal + mealTotal;
   const cleaningFee = 3500;
   const serviceFee = Math.round(subtotal * 0.05);
   const totalPrice = subtotal + cleaningFee + serviceFee;
@@ -233,16 +239,11 @@ export default function PropertyDetailPage() {
     }
   };
 
-  // Confirm Reservation Action
+  // Confirm Reservation Action -> Navigate to Guest Details & Checkout Page
   const handleConfirmReservation = () => {
     setIsReserving(true);
 
-    const refCode = `SV-${Math.floor(100000 + Math.random() * 900000)}`;
-    const newBookingId = `b-${Date.now()}`;
-
-    const newBooking = {
-      id: newBookingId,
-      reference: refCode,
+    const pendingCheckout = {
       villaId: villa.id,
       villaName: villa.name,
       villaLocation: villa.location,
@@ -254,46 +255,23 @@ export default function PropertyDetailPage() {
       adults,
       children: childrenCount,
       rooms: roomsCount,
+      mealPlan: mealOption,
+      mealPrice: mealTotal,
+      staySubtotal,
+      cleaningFee,
+      serviceFee,
       totalPrice,
       currency: villa.currency,
-      status: 'Confirmed' as const,
-      createdAt: format(today, 'dd MMM yyyy'),
+      pricePerNight: villa.pricePerNight,
     };
 
     try {
-      // Store in individual booking cache for /booking/[id]
-      localStorage.setItem(
-        `stayvilla-booking-${newBookingId}`,
-        JSON.stringify({
-          booking: newBooking,
-          villa: {
-            id: villa.id,
-            name: villa.name,
-            description: villa.description,
-            bedrooms: villa.bedrooms,
-            bathrooms: villa.bathrooms,
-            maxGuests: villa.maxGuests,
-            rating: villa.rating,
-            reviewsCount: villa.reviewsCount,
-            pricePerNight: villa.pricePerNight,
-            currency: villa.currency,
-          },
-        })
-      );
-
-      // Store in all bookings list
-      const existing = localStorage.getItem('stayvilla-bookings');
-      const list = existing ? JSON.parse(existing) : [];
-      list.unshift(newBooking);
-      localStorage.setItem('stayvilla-bookings', JSON.stringify(list));
+      localStorage.setItem('stayvilla-pending-checkout', JSON.stringify(pendingCheckout));
     } catch (e) {
-      console.error('Failed to store reservation in localStorage', e);
+      console.error('Failed to store pending checkout in localStorage', e);
     }
 
-    setLastBookingId(newBookingId);
-    setLastBookingRef(refCode);
-    setIsReserving(false);
-    setBookingSuccessModal(true);
+    router.push(`/checkout/${villa.id}`);
   };
 
   // Calendar days generation
@@ -812,18 +790,82 @@ export default function PropertyDetailPage() {
                 </div>
               </div>
 
+              {/* DINING & MEAL PREFERENCE SELECTOR */}
+              <div className="meal-plan-selector-box">
+                <label className="meal-plan-label">
+                  <Utensils size={13} /> DINING &amp; MEAL PREFERENCE
+                </label>
+                <div className="meal-options-grid">
+                  <button
+                    type="button"
+                    className={`meal-option-card ${mealOption === 'with-food' ? 'selected' : ''}`}
+                    onClick={() => setMealOption('with-food')}
+                  >
+                    <div className="meal-card-top">
+                      <div className="meal-card-title-wrap">
+                        <Utensils size={16} className="meal-icon" />
+                        <strong>With Food</strong>
+                      </div>
+                      <span className="meal-price-badge">+₹2,500 / guest / night</span>
+                    </div>
+                    <p className="meal-card-desc">
+                      All meals included: organic breakfast spread, royal thali lunch, evening high tea &amp; multi-course dinner prepared fresh by your dedicated in-house private chef.
+                    </p>
+                    <div className="meal-card-radio">
+                      <span className={`custom-radio ${mealOption === 'with-food' ? 'checked' : ''}`} />
+                      <span>{mealOption === 'with-food' ? `Selected (+₹${formatINR(mealTotal)})` : 'Select Gourmet Dining Plan'}</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`meal-option-card ${mealOption === 'without-food' ? 'selected' : ''}`}
+                    onClick={() => setMealOption('without-food')}
+                  >
+                    <div className="meal-card-top">
+                      <div className="meal-card-title-wrap">
+                        <Coffee size={16} className="meal-icon" />
+                        <strong>Without Food (Villa Only)</strong>
+                      </div>
+                      <span className="meal-price-badge free">Included (₹0)</span>
+                    </div>
+                    <p className="meal-card-desc">
+                      Villa accommodation only. Self-catering kitchen access or order bespoke dishes a la carte on arrival.
+                    </p>
+                    <div className="meal-card-radio">
+                      <span className={`custom-radio ${mealOption === 'without-food' ? 'checked' : ''}`} />
+                      <span>{mealOption === 'without-food' ? 'Selected (No Meal Charge)' : 'Select Villa Stay Only'}</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               {/* TRANSPARENT PRICE BREAKDOWN */}
               <div className="prop-price-breakdown">
                 <div className="p-row">
                   <span>
-                    {villa.currency}
-                    {formatINR(villa.pricePerNight)} × {nights} nights
+                    Villa Stay ({villa.currency}{formatINR(villa.pricePerNight)} × {nights} nights)
                   </span>
                   <span>
                     {villa.currency}
-                    {formatINR(subtotal)}
+                    {formatINR(staySubtotal)}
                   </span>
                 </div>
+                {mealOption === 'with-food' ? (
+                  <div className="p-row meal-highlight-row">
+                    <span>
+                      Royal Gourmet Dining ({totalGuests} guests × {nights}n @ ₹2,500/g/n)
+                    </span>
+                    <span className="text-forest">
+                      +{villa.currency}{formatINR(mealTotal)}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="p-row">
+                    <span>Dining Plan: Villa Only (No Meals)</span>
+                    <span>₹0</span>
+                  </div>
+                )}
                 <div className="p-row">
                   <span>Cleaning &amp; villa sanitization</span>
                   <span>
@@ -965,6 +1007,12 @@ export default function PropertyDetailPage() {
                   <strong>
                     {totalGuests} {totalGuests === 1 ? 'Guest' : 'Guests'} ({adults} Adults
                     {childrenCount > 0 ? `, ${childrenCount} Children` : ''})
+                  </strong>
+                </div>
+                <div className="conf-row">
+                  <span>Dining Plan</span>
+                  <strong className={mealOption === 'with-food' ? 'text-forest' : ''}>
+                    {mealOption === 'with-food' ? 'Royal Gourmet Meals & Private Chef' : 'Villa Stay Only (No Meals)'}
                   </strong>
                 </div>
                 <div className="conf-row">

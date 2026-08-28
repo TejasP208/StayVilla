@@ -154,7 +154,7 @@ const destinationsData: Destination[] = [
     country: 'India',
     latitude: 26.9124,
     longitude: 75.7873,
-    meta: 'Regal Rajasthan · 30 havelis',
+    meta: 'Regal Rajasthan · 30 villas',
     image: 'https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg?auto=compress&cs=tinysrgb&w=900',
     villasCount: 30,
   },
@@ -1436,7 +1436,7 @@ export default function Home() {
         </div>
         <div className="intro-text">
           <p>
-            From centuries-old Rajasthani havelis and serene Kerala backwater sanctuaries to mist-shrouded Himalayan chalets,
+            From centuries-old Rajasthani villas and serene Kerala backwater sanctuaries to mist-shrouded Himalayan chalets,
             each StayVilla across India is handpicked for soul-stirring architecture and warm Indian hospitality.
           </p>
           <a className="text-link" href="#villas">
@@ -1451,7 +1451,7 @@ export default function Home() {
           <div>
             <p className="eyebrow">A little extraordinary</p>
             <h2>
-              Featured <em>villas & havelis</em>
+              Featured <em>villas</em>
             </h2>
           </div>
           <div className="heading-actions">
@@ -1694,7 +1694,7 @@ export default function Home() {
               <ShieldCheck size={22} />
             </span>
             <h3>Verified Indian Estates</h3>
-            <p>Every palace, haveli, and modern villa is personally audited by our local curators.</p>
+            <p>Every palace and modern villa is personally audited by our local curators.</p>
           </div>
           <div className="trust-item">
             <span className="trust-icon">
@@ -1764,7 +1764,7 @@ export default function Home() {
           </h2>
         </div>
         <div className="newsletter-form">
-          <p>A curated monthly letter. Newly restored havelis, hidden plantation gems, and seasonal travel inspiration across India.</p>
+          <p>A curated monthly letter. Newly restored villas, hidden plantation gems, and seasonal travel inspiration across India.</p>
           <div className="email-row">
             <input aria-label="Email address" placeholder="Enter your email address" type="email" />
             <button>
@@ -1794,7 +1794,7 @@ export default function Home() {
           <div>
             <strong>Explore</strong>
             <a href="#villas">Goa Villas</a>
-            <a href="#destinations">Udaipur Havelis</a>
+            <a href="#destinations">Udaipur Villas</a>
             <a href="#experiences">Kerala Backwaters</a>
             <a href="#villas">Himachal Chalets</a>
           </div>
@@ -2312,7 +2312,7 @@ export default function Home() {
             <div className="auth-modal-header">
               <span className="brand-mark" style={{ fontSize: '32px' }}>⌁</span>
               <h2>Welcome to StayVilla India</h2>
-              <p>Log in to access your royal bookings, saved havelis and bespoke concierge services.</p>
+              <p>Log in to access your royal bookings, saved villas and bespoke concierge services.</p>
             </div>
 
             <form onSubmit={handleLoginSubmit} className="auth-form">

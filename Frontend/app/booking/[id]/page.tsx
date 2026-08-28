@@ -30,6 +30,14 @@ interface Booking {
   adults: number;
   children: number;
   rooms: number;
+  mealPlan?: 'with-food' | 'without-food';
+  mealPrice?: number;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  hasGst?: boolean;
+  gstNumber?: string;
+  companyName?: string;
   totalPrice: number;
   currency: string;
   status: 'Confirmed' | 'Completed' | 'Cancelled';
@@ -78,9 +86,11 @@ export default function BookingDetailPage() {
   const handleDownloadInvoice = () => {
     if (!booking) return;
 
-    const subtotal = villa
+    const staySubtotal = villa
       ? villa.pricePerNight * booking.nights
-      : Math.round(booking.totalPrice / 1.05 - 3500);
+      : Math.round((booking.totalPrice - (booking.mealPrice || 0)) / 1.05 - 3500);
+    const mealTotal = booking.mealPrice || 0;
+    const subtotal = staySubtotal + mealTotal;
     const cleaningFee = 3500;
     const serviceFee = Math.round(subtotal * 0.05);
 
@@ -96,10 +106,12 @@ export default function BookingDetailPage() {
     .inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1a3c34; padding-bottom: 24px; margin-bottom: 32px; }
     .inv-brand { font-size: 28px; font-weight: 700; color: #1a3c34; letter-spacing: -0.5px; }
     .inv-brand small { display: block; font-size: 10px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-top: 2px; }
+    .inv-billed-to { margin-top: 12px; font-size: 12.5px; line-height: 1.5; color: #444; }
+    .inv-billed-to strong { color: #1a3c34; }
     .inv-ref { text-align: right; }
     .inv-ref h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
     .inv-ref p { font-size: 22px; font-weight: 700; color: #1a3c34; }
-    .inv-ref .inv-date { font-size: 12px; color: #888; margin-top: 4px; }
+    .inv-date { font-size: 12px; color: #888; margin-top: 4px; }
     .inv-villa { background: #f8f6f1; padding: 24px; border-radius: 12px; margin-bottom: 28px; }
     .inv-villa h3 { font-size: 22px; margin-bottom: 4px; color: #1a3c34; }
     .inv-villa p { font-size: 13px; color: #666; }
@@ -127,6 +139,15 @@ export default function BookingDetailPage() {
   <div class="inv-header">
     <div>
       <div class="inv-brand">⌁ STAY<span style="font-weight:400">VILLA</span><small>Luxury Villas Across India</small></div>
+      ${
+        booking.guestName
+          ? `<div class="inv-billed-to">
+              <strong>Billed To:</strong> ${booking.guestName} ${booking.companyName ? `(${booking.companyName})` : ''}<br/>
+              ${booking.guestEmail ? `${booking.guestEmail}` : ''} ${booking.guestPhone ? `| ${booking.guestPhone}` : ''}
+              ${booking.gstNumber ? `<br/><strong>GSTIN:</strong> ${booking.gstNumber}` : ''}
+            </div>`
+          : ''
+      }
     </div>
     <div class="inv-ref">
       <h2>Tax Invoice</h2>
@@ -150,7 +171,37 @@ export default function BookingDetailPage() {
   <table class="inv-table">
     <thead><tr><th>Description</th><th>Amount</th></tr></thead>
     <tbody>
-      <tr><td>Villa Stay — ${villa ? villa.currency : booking.currency}${villa ? formatINR(villa.pricePerNight) : '—'} × ${booking.nights} nights</td><td>${booking.currency}${formatINR(subtotal)}</td></tr>
+      <tr><td>Villa Stay — ${villa ? villa.currency : booking.currency}${villa ? formatINR(villa.pricePerNight) : '—'} × ${booking.nights} nights</td><td>${booking.currency}${formatINR(staySubtotal)}</td></tr>
+      ${booking.mealPlan === 'with-food' ? `<tr><td>Royal Gourmet Dining &amp; Private Chef Plan (${booking.guests} guests × ${booking.nights} nights)</td><td>${booking.currency}${formatINR(mealTotal)}</td></tr>` : '<tr><td>Dining Plan — Villa Stay Only (No Meals)</td><td>₹0</td></tr>'}
+      <tr><td>Cleaning &amp; Maintenance Fee</td><td>${booking.currency}${formatINR(cleaningFee)}</td></tr>
+      <tr><td>StayVilla Concierge Fee (5%)</td><td>${booking.currency}${formatINR(serviceFee)}</td></tr>
+    </tbody>
+  </table>
+
+  <div class="inv-total">
+    <div class="inv-total-box">
+      <label>Total Amount (INR)</label>
+      <span>${booking.currency}${formatINR(booking.totalPrice)}</span>
+    </div>
+  </div>
+
+  <div class="inv-villa">
+    <h3>${booking.villaName} <span class="inv-status ${booking.status.toLowerCase()}">${booking.status}</span></h3>
+    <p>📍 ${booking.villaLocation}</p>
+  </div>
+
+  <div class="inv-grid">
+    <div class="inv-cell"><label>Check-in</label><span>${booking.checkIn}</span></div>
+    <div class="inv-cell"><label>Check-out</label><span>${booking.checkOut}</span></div>
+    <div class="inv-cell"><label>Duration</label><span>${booking.nights} Nights</span></div>
+    <div class="inv-cell"><label>Guests</label><span>${booking.adults} Adults${booking.children > 0 ? `, ${booking.children} Children` : ''}</span></div>
+  </div>
+
+  <table class="inv-table">
+    <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Villa Stay — ${villa ? villa.currency : booking.currency}${villa ? formatINR(villa.pricePerNight) : '—'} × ${booking.nights} nights</td><td>${booking.currency}${formatINR(staySubtotal)}</td></tr>
+      ${booking.mealPlan === 'with-food' ? `<tr><td>Royal Gourmet Dining &amp; Private Chef Plan (${booking.guests} guests × ${booking.nights} nights)</td><td>${booking.currency}${formatINR(mealTotal)}</td></tr>` : '<tr><td>Dining Plan — Villa Stay Only (No Meals)</td><td>₹0</td></tr>'}
       <tr><td>Cleaning &amp; Maintenance Fee</td><td>${booking.currency}${formatINR(cleaningFee)}</td></tr>
       <tr><td>StayVilla Concierge Fee (5%)</td><td>${booking.currency}${formatINR(serviceFee)}</td></tr>
     </tbody>
@@ -204,9 +255,11 @@ export default function BookingDetailPage() {
     );
   }
 
-  const subtotal = villa
+  const staySubtotal = villa
     ? villa.pricePerNight * booking.nights
-    : Math.round(booking.totalPrice / 1.05 - 3500);
+    : Math.round((booking.totalPrice - (booking.mealPrice || 0)) / 1.05 - 3500);
+  const mealTotal = booking.mealPrice || 0;
+  const subtotal = staySubtotal + mealTotal;
   const cleaningFee = 3500;
   const serviceFee = Math.round(subtotal * 0.05);
 
@@ -258,7 +311,13 @@ export default function BookingDetailPage() {
             <span>Booking Reference:</span>
             <strong>{booking.reference}</strong>
           </div>
-          <span className="bd-booked-on">Booked on {booking.createdAt}</span>
+          <button
+            type="button"
+            className="bd-download-invoice-btn"
+            onClick={handleDownloadInvoice}
+          >
+            <Download size={15} /> Download Tax Invoice (PDF)
+          </button>
         </div>
 
         {/* Stay Details Grid */}
@@ -279,11 +338,13 @@ export default function BookingDetailPage() {
             <small>{booking.nights + 1} Days</small>
           </div>
           <div className="bd-info-card">
-            <label>Guests</label>
+            <label>Guests &amp; Dining</label>
             <span>
               {booking.adults} Adults{booking.children > 0 ? `, ${booking.children} Children` : ''}
             </span>
-            <small>{booking.rooms} {booking.rooms === 1 ? 'Bedroom' : 'Bedrooms'}</small>
+            <small>
+              {booking.mealPlan === 'with-food' ? '🍽️ Gourmet Meals & Chef' : '🏡 Villa Only (No Meals)'}
+            </small>
           </div>
         </div>
 
@@ -309,8 +370,19 @@ export default function BookingDetailPage() {
               <span>
                 Villa Stay — {villa ? `${villa.currency}${formatINR(villa.pricePerNight)}` : ''} × {booking.nights} nights
               </span>
-              <span>{booking.currency}{formatINR(subtotal)}</span>
+              <span>{booking.currency}{formatINR(staySubtotal)}</span>
             </div>
+            {booking.mealPlan === 'with-food' ? (
+              <div className="bd-price-row">
+                <span>Royal Gourmet Dining &amp; Private Chef Plan</span>
+                <span className="text-forest">+{booking.currency}{formatINR(mealTotal)}</span>
+              </div>
+            ) : (
+              <div className="bd-price-row">
+                <span>Dining Plan: Villa Only (No Meals)</span>
+                <span>₹0</span>
+              </div>
+            )}
             <div className="bd-price-row">
               <span>Cleaning &amp; Maintenance Fee</span>
               <span>{booking.currency}{formatINR(cleaningFee)}</span>
