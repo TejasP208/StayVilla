@@ -363,7 +363,7 @@ export default function BookingDetailPage() {
                   rel="noopener noreferrer"
                   className="bd-whatsapp-link"
                 >
-                  WhatsApp (+91 9167914640)
+                  WhatsApp
                 </a>
                 .
               </p>

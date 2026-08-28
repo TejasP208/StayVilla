@@ -61,29 +61,10 @@ import {
   startOfToday,
   isWithinInterval,
 } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import { allVillas, Villa, formatINR } from '@/lib/villas';
 
 const heroImage = '/Villa_img.avif';
-
-interface Villa {
-  id: string;
-  name: string;
-  location: string;
-  region: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  pricePerNight: number;
-  currency: string;
-  rating: string;
-  reviewsCount: number;
-  image: string;
-  tag: string;
-  bedrooms: number;
-  bathrooms: number;
-  maxGuests: number;
-  details: string;
-  description: string;
-}
 
 interface Destination {
   name: string;
@@ -189,128 +170,6 @@ const destinationsData: Destination[] = [
   },
 ];
 
-const allVillas: Villa[] = [
-  {
-    id: 'the-royal-pichola',
-    name: 'The Royal Pichola Villa',
-    location: 'Lake Pichola, Udaipur, Rajasthan',
-    region: 'Udaipur',
-    country: 'India',
-    latitude: 24.5854,
-    longitude: 73.7125,
-    pricePerNight: 65000,
-    currency: '₹',
-    rating: '4.98',
-    reviewsCount: 52,
-    image: 'https://images.pexels.com/photos/3581364/pexels-photo-3581364.jpeg?auto=compress&cs=tinysrgb&w=1000',
-    tag: 'Royal Heritage',
-    bedrooms: 4,
-    bathrooms: 4,
-    maxGuests: 8,
-    details: '4 bedrooms · 8 guests',
-    description: 'Overlooking tranquil Lake Pichola with hand-carved marble jharokhas, private courtyards, infinity plunge pool, and royal Rajputana chef service.',
-  },
-  {
-    id: 'villa-sol-de-goa',
-    name: 'Villa Sol De Goa',
-    location: 'Anjuna, North Goa',
-    region: 'Goa',
-    country: 'India',
-    latitude: 15.58,
-    longitude: 73.742,
-    pricePerNight: 42000,
-    currency: '₹',
-    rating: '4.96',
-    reviewsCount: 48,
-    image: 'https://images.pexels.com/photos/4429334/pexels-photo-4429334.jpeg?auto=compress&cs=tinysrgb&w=1000',
-    tag: 'Guest Favourite',
-    bedrooms: 3,
-    bathrooms: 3,
-    maxGuests: 6,
-    details: '3 bedrooms · 6 guests',
-    description: 'Restored 19th-century Indo-Portuguese estate set amid coconut groves, featuring private lap pool, shaded verandahs, and private beach access.',
-  },
-  {
-    id: 'kumarakom-waters-edge',
-    name: 'Kumarakom Waters Edge',
-    location: 'Vembanad Lake, Kerala',
-    region: 'Kerala Backwaters',
-    country: 'India',
-    latitude: 9.6175,
-    longitude: 76.4301,
-    pricePerNight: 38000,
-    currency: '₹',
-    rating: '5.0',
-    reviewsCount: 39,
-    image: 'https://images.pexels.com/photos/962464/pexels-photo-962464.jpeg?auto=compress&cs=tinysrgb&w=1000',
-    tag: 'Rare Find',
-    bedrooms: 3,
-    bathrooms: 3,
-    maxGuests: 6,
-    details: '3 bedrooms · 6 guests',
-    description: 'Traditional teakwood Kerala nalukettu estate on the backwaters with private shikara boat, infinity pool, and personalized Ayurvedic wellness.',
-  },
-  {
-    id: 'the-himalayan-pine-chalet',
-    name: 'The Himalayan Pine Chalet',
-    location: 'Old Manali, Himachal Pradesh',
-    region: 'Manali & Shimla',
-    country: 'India',
-    latitude: 32.2432,
-    longitude: 77.1892,
-    pricePerNight: 32000,
-    currency: '₹',
-    rating: '4.95',
-    reviewsCount: 41,
-    image: 'https://images.pexels.com/photos/2670898/pexels-photo-2670898.jpeg?auto=compress&cs=tinysrgb&w=1000',
-    tag: 'Mountain & Snow',
-    bedrooms: 4,
-    bathrooms: 4,
-    maxGuests: 8,
-    details: '4 bedrooms · 8 guests',
-    description: 'Cedar wood and stone lodge with 360° snow-capped Himalayan views, roaring stone fireplace, heated floors, and a private stargazing deck.',
-  },
-  {
-    id: 'haveli-amer-heritage',
-    name: 'Haveli Amer Heritage',
-    location: 'Amer, Jaipur, Rajasthan',
-    region: 'Jaipur',
-    country: 'India',
-    latitude: 26.9855,
-    longitude: 75.8507,
-    pricePerNight: 75000,
-    currency: '₹',
-    rating: '4.99',
-    reviewsCount: 64,
-    image: 'https://images.pexels.com/photos/1007426/pexels-photo-1007426.jpeg?auto=compress&cs=tinysrgb&w=1000',
-    tag: 'Palace Living',
-    bedrooms: 5,
-    bathrooms: 5,
-    maxGuests: 10,
-    details: '5 bedrooms · 10 guests',
-    description: 'Exquisite regal architecture with frescoed arches, stepwell plunge pool, rooftop baradari, and private evening musical recitals.',
-  },
-  {
-    id: 'coorg-mistwood-estate',
-    name: 'Coorg Mistwood Estate',
-    location: 'Madikeri, Coorg, Karnataka',
-    region: 'Coorg',
-    country: 'India',
-    latitude: 12.4244,
-    longitude: 75.7382,
-    pricePerNight: 28000,
-    currency: '₹',
-    rating: '4.97',
-    reviewsCount: 36,
-    image: 'https://images.pexels.com/photos/4482064/pexels-photo-4482064.jpeg?auto=compress&cs=tinysrgb&w=1000',
-    tag: 'Coffee Plantation',
-    bedrooms: 4,
-    bathrooms: 4,
-    maxGuests: 8,
-    details: '4 bedrooms · 8 guests',
-    description: 'Colonial bungalow spread across a 50-acre private coffee estate with glass conservatory, outdoor bonfire pit, and curated plantation walks.',
-  },
-];
 
 const initialVillaImages = [
   'https://images.pexels.com/photos/3581364/pexels-photo-3581364.jpeg?auto=compress&cs=tinysrgb&w=1000',
@@ -378,10 +237,7 @@ const initialBookings: Booking[] = [
   },
 ];
 
-// Helper to format currency in Indian numbering format
-function formatINR(val: number): string {
-  return val.toLocaleString('en-IN');
-}
+
 
 // Calculate distance between two coordinates in kilometers using Haversine formula
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -399,6 +255,8 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 export default function Home() {
+  const router = useRouter();
+
   // Authentication & User Profile State
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile>({
@@ -479,6 +337,17 @@ export default function Home() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [lastCreatedBookingRef, setLastCreatedBookingRef] = useState<string>('');
 
+  // Navigate directly to dedicated property view page
+  const handleOpenProperty = (villaId: string) => {
+    const q = new URLSearchParams();
+    if (checkIn) q.set('checkIn', checkIn.toISOString());
+    if (checkOut) q.set('checkOut', checkOut.toISOString());
+    q.set('adults', adults.toString());
+    q.set('children', childrenCount.toString());
+    q.set('rooms', roomsCount.toString());
+    router.push(`/property/${villaId}?${q.toString()}`);
+  };
+
   // Login Form state
   const [loginEmail, setLoginEmail] = useState('aarav.mehta@stayvilla.in');
   const [loginName, setLoginName] = useState('Aarav Mehta');
@@ -509,8 +378,23 @@ export default function Home() {
     return 0;
   }, [checkIn, checkOut]);
 
-  // Close popovers on click / touch outside
+  // Close popovers on click / touch outside & check auth
   useEffect(() => {
+    try {
+      const storedAuth = localStorage.getItem('stayvilla-is-logged-in');
+      const storedUser = localStorage.getItem('stayvilla-user');
+      if (storedAuth === 'false') {
+        setIsLoggedIn(false);
+      } else if (storedAuth === 'true') {
+        setIsLoggedIn(true);
+      }
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        setUserProfile(parsed);
+        setProfileForm(parsed);
+      }
+    } catch {}
+
     function handleClickOutside(event: MouseEvent | TouchEvent) {
       if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
         setLocationOpen(false);
@@ -785,6 +669,9 @@ export default function Home() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setMenuOpen(false);
+    try {
+      localStorage.setItem('stayvilla-is-logged-in', 'false');
+    } catch {}
     setToastMessage('You have been logged out.');
     setSearchSent(true);
     setTimeout(() => setSearchSent(false), 2600);
@@ -912,7 +799,7 @@ export default function Home() {
               <>
                 <button
                   className="nav-link bookings-nav-btn"
-                  onClick={() => setMyBookingsOpen(true)}
+                  onClick={() => router.push('/my-bookings')}
                 >
                   <CalendarCheck size={14} /> My bookings ({bookings.filter((b) => b.status === 'Confirmed').length})
                 </button>
@@ -935,7 +822,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         setMenuOpen(false);
-                        setMyBookingsOpen(true);
+                        router.push('/my-bookings');
                       }}
                     >
                       <CalendarCheck size={14} /> My bookings
@@ -960,7 +847,7 @@ export default function Home() {
             ) : (
               <button
                 className="nav-link login-link-btn"
-                onClick={() => setLoginModalOpen(true)}
+                onClick={() => router.push('/login')}
               >
                 <LogIn size={15} /> Log in
               </button>
@@ -997,7 +884,7 @@ export default function Home() {
                   className="mobile-menu-link"
                   onClick={() => {
                     setMobileOpen(false);
-                    setMyBookingsOpen(true);
+                    router.push('/my-bookings');
                   }}
                 >
                   <CalendarCheck size={16} /> My bookings
@@ -1022,7 +909,7 @@ export default function Home() {
                 className="mobile-menu-link"
                 onClick={() => {
                   setMobileOpen(false);
-                  setLoginModalOpen(true);
+                  router.push('/login');
                 }}
               >
                 <LogIn size={16} /> Log in
@@ -1660,7 +1547,7 @@ export default function Home() {
 
               return (
                 <article className="villa-card" key={villa.id}>
-                  <div className="villa-image-wrap" onClick={() => setSelectedVillaForBooking(villa)}>
+                  <div className="villa-image-wrap" onClick={() => handleOpenProperty(villa.id)}>
                     <img src={villa.image} alt={`${villa.name} exterior`} />
                     <span className="villa-tag">{villa.tag}</span>
                     <button
@@ -1681,7 +1568,7 @@ export default function Home() {
 
                   <div className="villa-info">
                     <div>
-                      <h3 onClick={() => setSelectedVillaForBooking(villa)} className="villa-title-clickable">
+                      <h3 onClick={() => handleOpenProperty(villa.id)} className="villa-title-clickable">
                         {villa.name}
                       </h3>
                       <p>
@@ -1725,7 +1612,7 @@ export default function Home() {
                     <button
                       type="button"
                       className="reserve-card-btn"
-                      onClick={() => setSelectedVillaForBooking(villa)}
+                      onClick={() => handleOpenProperty(villa.id)}
                     >
                       Reserve
                     </button>
@@ -1991,7 +1878,7 @@ export default function Home() {
                     onClick={() => {
                       setSelectedVillaForBooking(null);
                       setBookingSuccess(false);
-                      setMyBookingsOpen(true);
+                      router.push('/my-bookings');
                     }}
                   >
                     <CalendarCheck size={16} /> View in My Bookings
