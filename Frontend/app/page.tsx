@@ -63,6 +63,7 @@ import {
 } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { allVillas, Villa, formatINR } from '@/lib/villas';
+import { getEffectiveVillas, getEffectiveDestinations } from '@/lib/admin-store';
 
 const heroImage = '/Villa_img.avif';
 
@@ -378,8 +379,22 @@ export default function Home() {
     return 0;
   }, [checkIn, checkOut]);
 
+  // Dynamic villas and destinations list (synced with admin dashboard)
+  const [villasData, setVillasData] = useState<Villa[]>(allVillas);
+  const [activeDestinations, setActiveDestinations] = useState<Destination[]>(destinationsData);
+
   // Close popovers on click / touch outside & check auth
   useEffect(() => {
+    // Load dynamic villas and destinations
+    const loadDynamicData = () => {
+      setVillasData(getEffectiveVillas());
+      setActiveDestinations(getEffectiveDestinations());
+    };
+    loadDynamicData();
+
+    window.addEventListener('stayvilla-villas-updated', loadDynamicData);
+    window.addEventListener('stayvilla-destinations-updated', loadDynamicData);
+    window.addEventListener('storage', loadDynamicData);
     try {
       const storedAuth = localStorage.getItem('stayvilla-is-logged-in');
       const storedUser = localStorage.getItem('stayvilla-user');
@@ -410,24 +425,27 @@ export default function Home() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
+      window.removeEventListener('stayvilla-villas-updated', loadDynamicData);
+      window.removeEventListener('stayvilla-destinations-updated', loadDynamicData);
+      window.removeEventListener('storage', loadDynamicData);
     };
   }, []);
 
   // Filter destination suggestions
   const filteredDestinations = useMemo(() => {
-    if (!locationQuery.trim()) return destinationsData;
+    if (!locationQuery.trim()) return activeDestinations;
     const q = locationQuery.toLowerCase();
-    return destinationsData.filter(
+    return activeDestinations.filter(
       (d) =>
         d.name.toLowerCase().includes(q) ||
         d.region.toLowerCase().includes(q) ||
         d.country.toLowerCase().includes(q)
     );
-  }, [locationQuery]);
+  }, [locationQuery, activeDestinations]);
 
   // Filter villas based on active search criteria
   const filteredVillas = useMemo(() => {
-    return allVillas.filter((villa) => {
+    return villasData.filter((villa) => {
       if (activeFilters.location.trim()) {
         const query = activeFilters.location.toLowerCase();
         const matchesLocation =
@@ -449,7 +467,7 @@ export default function Home() {
 
       return true;
     });
-  }, [activeFilters]);
+  }, [activeFilters, villasData]);
 
   // Filter Bookings for My Bookings Modal
   const displayedBookings = useMemo(() => {
@@ -1660,7 +1678,7 @@ export default function Home() {
         </div>
 
         <div className="destination-grid">
-          {destinationsData.slice(0, 3).map((destination) => (
+          {activeDestinations.slice(0, 3).map((destination) => (
             <a
               className="destination-card"
               href="#villas"

@@ -521,6 +521,18 @@ export const allVillas: Villa[] = [
 ];
 
 export function getVillaById(id: string): Villa | undefined {
+  if (typeof window !== 'undefined') {
+    try {
+      const custom = localStorage.getItem('stayvilla-custom-villas');
+      if (custom) {
+        const parsed: Villa[] = JSON.parse(custom);
+        const match = parsed.find((v) => v.id === id);
+        if (match) return match;
+      }
+    } catch {
+      // fallback
+    }
+  }
   return allVillas.find((v) => v.id === id);
 }
 
